@@ -133,7 +133,7 @@ int main() {
                     settings.rotated = false;
                 }
 
-                camera.rotation = Lerp(camera.rotation, end, dt);
+                camera.rotation = Lerp(camera.rotation, end, 45 * dt);
 
                 update_players(players, &camera, dt);
 
