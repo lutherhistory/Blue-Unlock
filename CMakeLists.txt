@@ -36,12 +36,6 @@ target_link_libraries(${PROJECT_NAME}
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/screenshots")
 
-file(CREATE_LINK
-    "${CMAKE_BINARY_DIR}/screenshots"
-    "${CMAKE_SOURCE_DIR}/docs/screenshots"
-    SYMBOLIC
-)
-
 
 # Test
 project(test)
