@@ -8,6 +8,10 @@ project(game
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(COMPILE_WARNINGS
+    -Wall
+    -Wextra
+)
 
 set(ASSETS_PATH "${CMAKE_SOURCE_DIR}/assets")
 
@@ -29,6 +33,11 @@ target_compile_definitions(${PROJECT_NAME}
 
 find_package(raylib REQUIRED)
 
+target_compile_options(${PROJECT_NAME}
+    PRIVATE
+        ${COMPILE_WARNINGS}
+)
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         raylib
@@ -43,7 +52,8 @@ project(test)
 add_executable(test
     test/main.test.c
     src/football-pitch.c
-    src/football-player.c
+    src/football-referee.c
+    src/physics-collisions.c
 )
 
 target_include_directories(test

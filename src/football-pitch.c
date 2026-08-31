@@ -4,9 +4,7 @@
 #include <raylib.h>
 
 // --- src/football-pitch.c
-void update_pitch(Pitch* pitch) {
-
-}
+void update_pitch(Pitch* pitch);
 
 void draw_pitch(Pitch* pitch) {
     Rectangle   area        = pitch->area;
@@ -31,10 +29,28 @@ void draw_pitch(Pitch* pitch) {
         strip.x * 2.5
     };
 
-    Vector2     goal        = {
-        goalArea.x * 0.6,
+    Vector2     goalStand        = {
+        goalArea.x * 0.4,
         goalArea.y * 0.6
     };
+
+    float       depth       = goalStand.x * 0.35f;
+
+    Rectangle front = {
+        .width  = goalStand.x,
+        .height = goalStand.y
+    };
+
+    front.x     = bound.x - front.width - depth;
+    front.y     = bound.y + (bound.height - front.height) * 0.5f;
+
+    Rectangle back = {
+        .width  = front.width,
+        .height = front.height + depth
+    };
+
+    back.x      = bound.x - back.width;
+    back.y      = bound.y + (bound.height - back.height) * 0.5f;
 
     // Drawing Grasss
     for (int i=0; i < area.width / strip.x; i++){
@@ -235,91 +251,184 @@ void draw_pitch(Pitch* pitch) {
         paint
     );
 
-    // Drawing Goals
-    Vector2 goalLeft = {
-        .x      = bound.x - goal.x + thick,
-        .y      = bound.y + (bound.height - goal.y) / 2.0f,
-    };
+    // Drawing Goals Stands
+    paint = (Color) {0xCC, 0xCC, 0xCC, 0xFF};
 
-    DrawRectangleLinesEx(
-        (Rectangle){
-            .width  = goal.x,
-            .height = goal.y,
-            .x      = goalLeft.x,
-            .y      = goalLeft.y
+    DrawLineEx(
+        (Vector2){
+            front.x + front.width,
+            front.y
         },
-        thick * 0.2,
+        (Vector2){
+            back.x + back.width,
+            back.y
+        },
+        thick * 0.2f,
+        paint
+    );
+    DrawLineEx(
+        (Vector2){
+            front.x + front.width,
+            front.y + front.height
+        },
+        (Vector2){
+            back.x  + back.width,
+            back.y  + back.height
+        },
+        thick * 0.2f,
+        paint
+    );
+    DrawLineEx(
+        (Vector2){
+            front.x,
+            front.y
+        },
+        (Vector2){
+            back.x,
+            back.y
+        },
+        thick * 0.2f,
+        paint
+    );
+    DrawLineEx(
+        (Vector2){
+            front.x,
+            front.y + front.height
+        },
+        (Vector2){
+            back.x,
+            back.y + back.height
+        },
+        thick * 0.2f,
         paint
     );
 
-    for (int i=0; i < 10; i++) {
-        DrawLineV(
-            (Vector2){
-                goalLeft.x,
-                goalLeft.y + i * (goal.y / 10)
-            },
-            (Vector2){
-                goalLeft.x + goal.x,
-                goalLeft.y + i * (goal.y / 10)
-            },
-            paint
-        );
-    }
+    DrawRectangleLinesEx(back, thick * 0.2f, paint);
+    DrawRectangleLinesEx(front, thick * 0.2f, paint);
 
-    for (int i=0; i < 10; i++) {
-        DrawLineV(
-            (Vector2){
-                goalLeft.x + i * (goal.x / 10),
-                goalLeft.y
-            },
-            (Vector2){
-                goalLeft.x + i * (goal.x / 10),
-                goalLeft.y + goal.y
-            },
-            paint
-        );
-    }
-
-    Vector2 goalRight = {
-        .x      = bound.x + (bound.width - thick),
-        .y      = bound.y + (bound.height - goal.y) / 2.0f,
-    };
-
-    DrawRectangleLinesEx(
-        (Rectangle){
-            .width  = goal.x,
-            .height = goal.y,
-            .x      = goalRight.x,
-            .y      = goalRight.y
+    DrawLineEx(
+        (Vector2){
+            bound.x + bound.width + depth,
+            front.y
         },
-        thick * 0.2,
+        (Vector2){
+            bound.x + bound.width,
+            back.y
+        },
+        thick * 0.2f,
+        paint
+    );
+    DrawLineEx(
+        (Vector2){
+            bound.x + bound.width + depth,
+            front.y + front.height
+        },
+        (Vector2){
+            bound.x + bound.width,
+            back.y + back.height
+        },
+        thick * 0.2f,
+        paint
+    );
+    DrawLineEx(
+        (Vector2){
+            bound.x + bound.width + depth + front.width,
+            front.y
+        },
+        (Vector2){
+            bound.x + bound.width + back.width,
+            back.y
+        },
+        thick * 0.2f,
+        paint
+    );
+    DrawLineEx(
+        (Vector2){
+            bound.x + bound.width + front.width + depth,
+            front.y + front.height
+        },
+        (Vector2){
+            bound.x + bound.width + back.width,
+            back.y + back.height
+        },
+        thick * 0.2f,
         paint
     );
 
-    for (int i=0; i < 10; i++) {
-        DrawLineV(
+    DrawRectangleLinesEx(
+        (Rectangle){
+            bound.x + bound.width + depth,
+            front.y,
+            front.width,
+            front.height
+        },
+        thick * 0.2f,
+        paint
+    );
+    DrawRectangleLinesEx(
+        (Rectangle){
+            bound.x + bound.width,
+            back.y,
+            back.width,
+            back.height
+        },
+        thick * 0.2f,
+        paint
+    );
+
+    // Drawing Goal Nets
+    for (int i=0; i < 12; i++) {
+        DrawLineEx(
             (Vector2){
-                goalRight.x + i * (goal.x / 10),
-                goalRight.y
+                bound.x + bound.width + depth,
+                front.y + (front.height / 12.0f) * i
             },
             (Vector2){
-                goalRight.x + i * (goal.x / 10),
-                goalRight.y + goal.y
+                bound.x + bound.width + depth + front.width,
+                front.y + (front.height / 12.0f) * i
             },
+            thick * 0.05f,
+            paint
+        );
+
+        DrawLineEx(
+            (Vector2){
+                bound.x - depth,
+                front.y + (front.height / 12.0f) * i
+            },
+            (Vector2){
+                bound.x - front.width - depth,
+                front.y + (front.height / 12.0f) * i
+            },
+            thick * 0.05f,
             paint
         );
     }
 
-    for (int i=0; i < 10; i++) {
-        DrawLineV(
+    for (int i=0; i < 4; i++) {
+        DrawLineEx(
             (Vector2){
-                goalRight.x,
-                goalRight.y + i * (goal.y / 10)
+                bound.x - depth - (front.width / 4.0f) * i,
+                front.y
             },
             (Vector2){
-                goalRight.x + goal.x,
-                goalRight.y + i * (goal.y / 10)
+                bound.x - depth - (front.width / 4.0f) * i,
+                front.y + front.height
             },
+            thick * 0.05f,
+            paint
+        );
+
+        DrawLineEx(
+            (Vector2){
+                bound.x + bound.width + depth + (front.width / 4.0f) * i,
+                front.y
+            },
+            (Vector2){
+                bound.x + bound.width + depth + (front.width / 4.0f) * i,
+                front.y + front.height
+            },
+            thick * 0.05f,
             paint
         );
     }

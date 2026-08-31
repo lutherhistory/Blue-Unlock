@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#include "colour.h"
 #include "football/pitch.h"
 #include "football/player.h"
 
@@ -12,16 +13,12 @@ typedef struct {
 
     bool muted;
     bool rotated;
+    bool zommed;
 
 } Settings;
 
 void game_settings(Settings* settings) {
     if (IsKeyPressed(KEY_F4)) {
-        if (settings->muted)
-            SetMasterVolume(0.0f);
-
-        else
-            SetMasterVolume(1.0f);
 
         settings->muted = !settings->muted;
     }
@@ -31,6 +28,11 @@ void game_settings(Settings* settings) {
         settings->rotated = true;
     }
 
+    else if (IsKeyPressed(KEY_F9)) {
+
+        settings->zommed  = !settings->zommed;
+    }
+
     else if (IsKeyPressed(KEY_F11)) {
         static int screenshotID = 0;
 
@@ -38,6 +40,12 @@ void game_settings(Settings* settings) {
         TakeScreenshot(TextFormat("/screenshots/screenshots(%d).png", screenshotID));
         screenshotID += 1;
     }
+
+    if (settings->muted)
+        SetMasterVolume(0.0f);
+
+    else
+        SetMasterVolume(1.0f);
 }
 
 // --- src/main.c ---
@@ -49,7 +57,8 @@ int main() {
 
     SetTargetFPS(60);
 
-    Pitch       pitch       = {
+    // Core
+    Pitch       pitch           = {
         .area  = {
             .width  = WINDOW_WIDTH,
             .height = WINDOW_HEIGHT,
@@ -69,9 +78,9 @@ int main() {
             .y      = pitch.area.y + pitch.strip.x,
         }
     };
-    Player*     players     = call_players(&pitch, 7, 7);
-    Referee     referee     = create_referee(100, 100, 50);
-    Camera2D    camera      = {
+    Player*     players         = call_players(&pitch, 7, 7);
+    Referee     referee         = create_referee(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 10);
+    Camera2D    camera          = {
         .offset = {
             WINDOW_WIDTH  / 2.0f,
             WINDOW_HEIGHT / 2.0f
@@ -84,14 +93,32 @@ int main() {
         .zoom = 1.0f
     };
 
+
+    players->indicated_obj = &(Vector2) {
+        pitch.area.width  / 2.0f,
+        pitch.area.height / 2.0f
+    };
+    referee.chase_target   = (Vector2) {
+        GetRandomValue(pitch.bound.x, pitch.bound.x + pitch.bound.width),
+        GetRandomValue(pitch.bound.y, pitch.bound.y + pitch.bound.height)
+    };
+
+    // Textures
+    // RenderTexture2D goalStand = LoadRenderTexture(pitch.area.width, pitch.area.height);
+
+    // Game State
     bool        game_start  = false;
     bool        game_intro  = false;
+    bool        game_skip   = false;
+    bool        game_menu   = false;
 
+    // Lighting
     float       lighting    = 0.7f;
     float       timerLight  = 2.0f / 4.0f;
 
     // Sound Effects and Audios
     Sound       floodlight_sfx      = LoadSound(ASSETS_PATH "/audios/floodlight.wav");
+    Sound       whistle_sfx         = LoadSound(ASSETS_PATH "/audios/referee-whistle.wav");
     Music       fan_shout_music     = LoadMusicStream(ASSETS_PATH "/audios/football-fan-shout.mp3");
     Music       before_match_music  = LoadMusicStream(ASSETS_PATH "/audios/football-before-match.mp3");
 
@@ -105,24 +132,60 @@ int main() {
     if (players) {
         Settings settings = {
             .rotated = false,
-            .muted   = true
+            .muted   = true,
+            .zommed  = true,
+        };
+
+        Vector2 stamina_hud_size      = {
+            WINDOW_WIDTH * 0.2,
+            WINDOW_HEIGHT * 0.02
+        };
+        Vector2 stamina_hud_pos       = {
+            (WINDOW_WIDTH  - stamina_hud_size.x) * 0.5f,
+            (WINDOW_HEIGHT - stamina_hud_size.y) * 0.95f
         };
 
         PlayMusicStream(fan_shout_music);
         PlayMusicStream(before_match_music);
 
         while (!WindowShouldClose()) {
-            Vector2     mousePos = GetMousePosition();
+            // Vector2     mousePos = GetMousePosition();
 
             float       dt        = GetFrameTime();
-            float       scroll    = GetMouseWheelMove();
+            // float       scroll    = GetMouseWheelMove();
+
+            float    curr_stamina = stamina_hud_size.x * (players->stamina / players->max_stamina);
 
 
             game_settings(&settings);
 
 
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+
+                game_menu = !game_menu;
+            }
+
+
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+
                 game_intro = true;
+            }
+
+            else if (IsKeyPressed(KEY_TAB)) {
+
+                game_skip = true;
+            }
+
+            if (game_skip) {
+                if (lighting <= 0.8f)
+                    lighting += dt;
+                else {
+
+                    PauseMusicStream(before_match_music);
+
+                    game_start  = true;
+                    game_intro  = false;
+                }
             }
 
             if (game_start) {
@@ -135,10 +198,20 @@ int main() {
 
                 camera.rotation = Lerp(camera.rotation, end, 45 * dt);
 
+                if (settings.zommed){
+                    if (camera.zoom <= 5.0f)
+                        camera.zoom += 2 * dt;
+                }
+
+                else {
+                    if (camera.zoom >= 1.0f)
+                        camera.zoom -= 2.f * dt;
+                }
+
                 update_players(players, &camera, dt);
+                updaet_referee(&referee, &pitch, &whistle_sfx, dt);
 
             } else {
-
                 if (game_intro) {
                     if (lighting >= 0.0f) {
                         if (timerLight >= 0.0f) {
@@ -190,12 +263,16 @@ int main() {
                     draw_pitch(&pitch);
                     draw_players(players);
 
+                    draw_referee(&referee);
+
                 EndMode2D();
 
+                if (game_menu) {
+
+                    // DrawRectangle
+                }
 
                 if (!game_start) {
-                    const char* progression = WINDOW_TITLE;
-
 
                     BeginBlendMode(BLEND_ALPHA);
 
@@ -209,42 +286,59 @@ int main() {
 
                     EndBlendMode();
 
+                    if (!game_menu) {
+                        const char* progression = WINDOW_TITLE;
 
-                    if (game_intro) {
 
-                        if (lighting > 0.0f)
-                            progression = loading_title[1];
-                        else
-                            progression = loading_title[0];
+                        if (game_intro) {
 
-                    } else {
-                        DrawText(
-                            "Click to start",
-                            (WINDOW_WIDTH - MeasureText("Click to start", 20)) * 0.5f,
-                            WINDOW_HEIGHT * 0.9f,
-                            20,
-                            Fade(YELLOW, 0.7)
+                            if (lighting > 0.0f)
+                                progression = loading_title[1];
+                            else
+                                progression = loading_title[0];
+
+                        } else {
+                            DrawText(
+                                "Left Click to Start / Right Click to Open Menu",
+                                (WINDOW_WIDTH - MeasureText("Left Click to Start / Right Click to Open Menu", 15)) * 0.5f,
+                                WINDOW_HEIGHT * 0.9f,
+                                15,
+                                (Color) {0xFA, 0xCC, 0x15, 0xff}
+                            );
+                        }
+
+                        DrawTextPro(
+                            GetFontDefault(),
+                            progression,
+                            (Vector2){
+                                WINDOW_WIDTH  * 0.5f,
+                                WINDOW_HEIGHT * 0.5f
+                            },
+                            (Vector2){
+                                MeasureText(progression, 40) * 0.5f,
+                                40 * 0.5f
+                            },
+                            0.0f,
+                            40,
+                            4,
+                            WHITE
                         );
                     }
-
-                    DrawTextPro(
-                        GetFontDefault(),
-                        progression,
-                        (Vector2){
-                            WINDOW_WIDTH  * 0.5f,
-                            WINDOW_HEIGHT * 0.5f
-                        },
-                        (Vector2){
-                            MeasureText(progression, 40) * 0.5f,
-                            40 * 0.5f
-                        },
-                        0.0f,
-                        40,
-                        4,
-                        WHITE
-                    );
                 } else {
+                    DrawRectangleV(
+                        stamina_hud_pos,
+                        stamina_hud_size,
+                        Fade(WHITE, 0.5)
+                    );
 
+                    DrawRectangleV(
+                        stamina_hud_pos,
+                        (Vector2){
+                            curr_stamina,
+                            stamina_hud_size.y
+                        },
+                        WHITE_NORD4
+                    );
                 }
 
             EndDrawing();
@@ -274,14 +368,20 @@ int main() {
         }
     }
 
-    // Free up the heap memory usage...
+    // Free up the Players' heap memory usage...
     kill_players(players);
 
+    // Free up texture memory usage...
+    // UnloadRenderTexture(goalStand);
+
+    // Unload the music streams...
     UnloadMusicStream(before_match_music);
 
     UnloadMusicStream(fan_shout_music);
 
     UnloadSound(floodlight_sfx);
+
+    UnloadSound(whistle_sfx);
 
     // Close the Raylib Audio Subsystem...
     CloseAudioDevice();

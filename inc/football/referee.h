@@ -1,6 +1,7 @@
 #ifndef  REFEREER_H
 #define  REFEREER_H
 
+#include "football/pitch.h"
 #include <raylib.h>
 
 typedef struct {
@@ -11,7 +12,8 @@ typedef struct {
     Vector2 pointB;
     Vector2 pointC;
 
-    float   offset;
+    Vector2 velocity;
+    Vector2 chase_target;
 
     Color   color;
 
@@ -19,7 +21,7 @@ typedef struct {
 
 Referee create_referee(float pos_x, float pos_y, float offset);
 
-void updaet_referee(Referee* referee, float dt);
+void updaet_referee(Referee* referee, const Pitch* pitch, Sound* whistle, float dt);
 
 void draw_referee(Referee* referee);
 

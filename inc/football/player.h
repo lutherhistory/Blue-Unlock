@@ -9,9 +9,14 @@
 typedef struct {
 
     Rectangle   body;
+
     Color       color;
+    Color       outline;
+
+    Vector2*    indicated_obj;
 
     Vector2     velocity;
+    Vector2     direction;
     float       speed;
 
     int         total;
