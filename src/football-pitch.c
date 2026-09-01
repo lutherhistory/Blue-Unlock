@@ -377,6 +377,7 @@ void draw_pitch(Pitch* pitch) {
     );
 
     // Drawing Goal Nets
+    // Roof
     for (int i=0; i < 12; i++) {
         DrawLineEx(
             (Vector2){
@@ -430,6 +431,22 @@ void draw_pitch(Pitch* pitch) {
             },
             thick * 0.05f,
             paint
+        );
+    }
+
+    // Left
+    for (int i=0; i < 4; i++) {
+        DrawLineEx(
+            (Vector2){
+                front.x,
+                front.y + front.height
+            },
+            (Vector2){
+                front.x + front.width,
+                front.y + front.height
+            },
+            thick * 0.05f,
+            PINK
         );
     }
 }

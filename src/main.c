@@ -8,6 +8,7 @@
 
 #include "football/referee.h"
 #include "need.h"
+#include "physics/collisions.h"
 
 typedef struct {
 
@@ -21,14 +22,14 @@ typedef struct {
 #if DEBUG
     Settings settings = {
         .rotated    = false,
-        .muted      = false,
+        .muted      = true,
         .zommed     = true,
-        .attribute  = true
+        .attribute  = false
     };
 #else
     Settings settings = {
         .rotated    = true,
-        .muted      = true,
+        .muted      = false,
         .zommed     = true,
         .attribute  = true
     };
@@ -100,8 +101,8 @@ int main() {
             .y      = pitch.area.y + pitch.strip.x,
         }
     };
-    Player*     players         = call_players(&pitch, 11, 11);
-    Referee     referee         = create_referee(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 10);
+    Player*     players         = call_players(&pitch, 7, 7);
+    Referee     referee         = create_referee(pitch.area.width / 2.0f, pitch.area.height / 2.0f);
     Camera2D    camera          = {
         .offset = {
             WINDOW_WIDTH  / 2.0f,
@@ -115,8 +116,11 @@ int main() {
         .zoom = 1.0f
     };
 
+    CollisionSystem collisionSystem = {
+        .collider1st = &players->collider,
+        .collider2nd = &pitch.collider,
+    };
 
-    players->indicated_obj = &referee.center;
     referee.chase_target   = (Vector2) {
         GetRandomValue(pitch.bound.x, pitch.bound.x + pitch.bound.width),
         GetRandomValue(pitch.bound.y, pitch.bound.y + pitch.bound.height)
@@ -212,6 +216,8 @@ int main() {
 
             if (game_start) {
                 static float end = 0.0f;
+                if (!players->indicated_obj)
+                    players->indicated_obj = &referee.center;
 
                 if (settings.rotated) {
                     end += 90.0f;
@@ -275,6 +281,8 @@ int main() {
             }
 
             UpdateMusicStream(before_match_music);
+
+            update_collision_system(&collisionSystem);
 
             BeginDrawing();
 
