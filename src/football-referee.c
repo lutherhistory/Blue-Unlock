@@ -5,7 +5,7 @@
 #include <raymath.h>
 #include <stdbool.h>
 
-const float offset = 5.0f;
+float offset = 5.0f;
 
 void update_triangle(Vector2* a, Vector2* b, Vector2 *c, Vector2 center) {
     *a = (Vector2) {
@@ -25,7 +25,7 @@ void update_triangle(Vector2* a, Vector2* b, Vector2 *c, Vector2 center) {
 
 }
 
-Referee create_referee(float pos_x, float pos_y, float offset) {
+Referee create_referee(float pos_x, float pos_y, float _offset) {
     Vector2 a = {
         .x = pos_x,
         .y = pos_y - offset
@@ -42,6 +42,7 @@ Referee create_referee(float pos_x, float pos_y, float offset) {
     };
 
     Color color = GOLD;
+    offset = _offset;
 
     return (Referee){
         .center = (Vector2){
@@ -82,28 +83,28 @@ void updaet_referee(Referee* referee, const Pitch* pitch, Sound* whistle, float 
 }
 
 void draw_referee(Referee* referee) {
-    float thick = 3.0f;
+    float thick = offset * 0.3;
 
-    Vector2 a = {
-        referee->pointA.x,
-        referee->pointA.y - thick * 2.0f
-    };
-    Vector2 b = {
-        referee->pointB.x - thick,
-        referee->pointB.y + thick
-    };
-    Vector2 c = {
-        referee->pointC.x + thick,
-        referee->pointC.y + thick
-    };
+    // Vector2 a = {
+    //     referee->pointA.x,
+    //     referee->pointA.y - thick * 2.0f
+    // };
+    // Vector2 b = {
+    //     referee->pointB.x - thick,
+    //     referee->pointB.y + thick
+    // };
+    // Vector2 c = {
+    //     referee->pointC.x + thick,
+    //     referee->pointC.y + thick
+    // };
 
 
-    DrawTriangle(
-        a,
-        b,
-        c,
-        BLACK
-    );
+    // DrawTriangle(
+    //     a,
+    //     b,
+    //     c,
+    //     BLACK
+    // );
 
     DrawTriangle(
         referee->pointA,
@@ -112,7 +113,11 @@ void draw_referee(Referee* referee) {
         referee->color
     );
 
-    // DrawLineEx(referee->pointA, referee->pointB, thick, BLACK);
-    // DrawLineEx(referee->pointB, referee->pointC, thick, BLACK);
-    // DrawLineEx(referee->pointA, referee->pointC, thick, BLACK);
+    DrawLineEx(referee->pointA, referee->pointB, thick, BLACK);
+    DrawLineEx(referee->pointB, referee->pointC, thick, BLACK);
+    DrawLineEx(referee->pointA, referee->pointC, thick, BLACK);
+
+    DrawCircleV(referee->pointA, thick * 0.5, BLACK);
+    DrawCircleV(referee->pointB, thick * 0.5, BLACK);
+    DrawCircleV(referee->pointC, thick * 0.5, BLACK);
 }

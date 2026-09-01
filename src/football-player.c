@@ -58,6 +58,8 @@ Player* call_players(const Pitch* pitch, size_t team1, size_t team2) {
         players[i].rotation = 0.0f;
 
         if (i < (int)team1) {
+            players[i].number    = i + 1;
+
             players[i].color    = RED;
             players[i].outline  = BLACK;
 
@@ -65,6 +67,8 @@ Player* call_players(const Pitch* pitch, size_t team1, size_t team2) {
             players[i].body.y = field.y + (field.height / 2.0f + (i - (team1 - 1) / 2.0f) * strip.x);
         } else {
             int j = i - team1;
+
+            players[i].number    = j + 1;
 
             players[i].color    = BLUE;
             players[i].outline  = BLACK;
@@ -131,6 +135,19 @@ void draw_players(const Player* players) {
             players[i].color
         );
 
+        DrawTextEx(
+            GetFontDefault(),
+            TextFormat("%d",
+            players[i].number),
+            (Vector2){
+                body.x - MeasureText(TextFormat("%d", players[i].number), 5) * 0.5f,
+                body.y - 2.5f
+            },
+            5,
+            0,
+            WHITE
+        );
+
         if (i == 0) {
             Vector2 center = {
                 body.x,
@@ -178,7 +195,7 @@ void draw_players(const Player* players) {
 void handle_player(Player* player, float camera_rotation, float dt) {
     Vector2 movement = Vector2Zero();
 
-    if (player->stamina > 1.0f && IsKeyDown(KEY_LEFT_SHIFT)) {
+    if (player->stamina > player->max_stamina * 0.01f && IsKeyDown(KEY_LEFT_SHIFT)) {
         player->speed = 100.0f;
         player->sprinting = true;
 

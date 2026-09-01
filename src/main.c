@@ -14,8 +14,25 @@ typedef struct {
     bool muted;
     bool rotated;
     bool zommed;
+    bool attribute;
 
 } Settings;
+
+#if DEBUG
+    Settings settings = {
+        .rotated    = false,
+        .muted      = false,
+        .zommed     = true,
+        .attribute  = true
+    };
+#else
+    Settings settings = {
+        .rotated    = true,
+        .muted      = true,
+        .zommed     = true,
+        .attribute  = true
+    };
+#endif
 
 void game_settings(Settings* settings) {
     if (IsKeyPressed(KEY_F4)) {
@@ -31,6 +48,11 @@ void game_settings(Settings* settings) {
     else if (IsKeyPressed(KEY_F9)) {
 
         settings->zommed  = !settings->zommed;
+    }
+
+    else if (IsKeyPressed(KEY_F10)) {
+
+        settings->attribute = !settings->attribute;
     }
 
     else if (IsKeyPressed(KEY_F11)) {
@@ -78,7 +100,7 @@ int main() {
             .y      = pitch.area.y + pitch.strip.x,
         }
     };
-    Player*     players         = call_players(&pitch, 7, 7);
+    Player*     players         = call_players(&pitch, 11, 11);
     Referee     referee         = create_referee(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 10);
     Camera2D    camera          = {
         .offset = {
@@ -94,10 +116,7 @@ int main() {
     };
 
 
-    players->indicated_obj = &(Vector2) {
-        pitch.area.width  / 2.0f,
-        pitch.area.height / 2.0f
-    };
+    players->indicated_obj = &referee.center;
     referee.chase_target   = (Vector2) {
         GetRandomValue(pitch.bound.x, pitch.bound.x + pitch.bound.width),
         GetRandomValue(pitch.bound.y, pitch.bound.y + pitch.bound.height)
@@ -106,15 +125,22 @@ int main() {
     // Textures
     // RenderTexture2D goalStand = LoadRenderTexture(pitch.area.width, pitch.area.height);
 
-    // Game State
+    // Game Setup
     bool        game_start  = false;
     bool        game_intro  = false;
     bool        game_skip   = false;
     bool        game_menu   = false;
 
-    // Lighting
     float       lighting    = 0.7f;
     float       timerLight  = 2.0f / 4.0f;
+
+    Rectangle   attributeUI = {
+        .width  = WINDOW_WIDTH,
+        .height = WINDOW_HEIGHT * 0.07
+    };
+
+    attributeUI.x = (WINDOW_WIDTH - attributeUI.width) / 2.0f;
+    attributeUI.y = WINDOW_HEIGHT - attributeUI.height;
 
     // Sound Effects and Audios
     Sound       floodlight_sfx      = LoadSound(ASSETS_PATH "/audios/floodlight.wav");
@@ -130,19 +156,13 @@ int main() {
 
 
     if (players) {
-        Settings settings = {
-            .rotated = false,
-            .muted   = true,
-            .zommed  = true,
-        };
-
         Vector2 stamina_hud_size      = {
-            WINDOW_WIDTH * 0.2,
-            WINDOW_HEIGHT * 0.02
+            attributeUI.width  * 0.3f,
+            attributeUI.height * 0.3f
         };
         Vector2 stamina_hud_pos       = {
-            (WINDOW_WIDTH  - stamina_hud_size.x) * 0.5f,
-            (WINDOW_HEIGHT - stamina_hud_size.y) * 0.95f
+            attributeUI.x + (attributeUI.width  - stamina_hud_size.x) * 0.5f,
+            attributeUI.y + (attributeUI.height - stamina_hud_size.y) * 0.5f
         };
 
         PlayMusicStream(fan_shout_music);
@@ -154,7 +174,9 @@ int main() {
             float       dt        = GetFrameTime();
             // float       scroll    = GetMouseWheelMove();
 
-            float    curr_stamina = stamina_hud_size.x * (players->stamina / players->max_stamina);
+            float    curr_stamina = (stamina_hud_size.x * (players->stamina / players->max_stamina));
+
+            curr_stamina = curr_stamina > stamina_hud_size.x * 0.03 ? curr_stamina : stamina_hud_size.x * 0.03;
 
 
             game_settings(&settings);
@@ -261,6 +283,7 @@ int main() {
                 BeginMode2D(camera);
 
                     draw_pitch(&pitch);
+
                     draw_players(players);
 
                     draw_referee(&referee);
@@ -324,21 +347,37 @@ int main() {
                             WHITE
                         );
                     }
-                } else {
-                    DrawRectangleV(
-                        stamina_hud_pos,
-                        stamina_hud_size,
-                        Fade(WHITE, 0.5)
-                    );
+                } else if (settings.attribute) {
 
-                    DrawRectangleV(
-                        stamina_hud_pos,
-                        (Vector2){
-                            curr_stamina,
-                            stamina_hud_size.y
-                        },
-                        WHITE_NORD4
-                    );
+                    BeginBlendMode(BLEND_ALPHA);
+
+                        DrawRectangleRec(attributeUI, Fade(BLACK, 0.5f));
+
+                        DrawRectangleRounded(
+                            (Rectangle){
+                                stamina_hud_pos.x,
+                                stamina_hud_pos.y,
+                                stamina_hud_size.x,
+                                stamina_hud_size.y
+                            },
+                            50.0f,
+                            0,
+                            Fade(WHITE_NORD1, 0.5f)
+                        );
+
+                        DrawRectangleRounded(
+                            (Rectangle){
+                                stamina_hud_pos.x,
+                                stamina_hud_pos.y,
+                                curr_stamina,
+                                stamina_hud_size.y
+                            },
+                            50.0f,
+                            0,
+                            WHITE_NORD4
+                        );
+
+                    EndBlendMode();
                 }
 
             EndDrawing();

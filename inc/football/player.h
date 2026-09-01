@@ -10,6 +10,7 @@ typedef struct {
 
     Rectangle   body;
 
+    char        number;
     Color       color;
     Color       outline;
 

@@ -12,6 +12,8 @@ typedef struct {
     Vector2 pointB;
     Vector2 pointC;
 
+    float   offset;
+
     Vector2 velocity;
     Vector2 chase_target;
 
@@ -19,7 +21,7 @@ typedef struct {
 
 } Referee;
 
-Referee create_referee(float pos_x, float pos_y, float offset);
+Referee create_referee(float pos_x, float pos_y, float _offset);
 
 void updaet_referee(Referee* referee, const Pitch* pitch, Sound* whistle, float dt);
 
