@@ -8,4 +8,15 @@
 
 # For 2026-08-31
 
-- [ ] Set `struct __GameManager GameManager;`.
+- [X] Set `struct __GameManager GameManager;`.
+
+# For 2026-09-02
+
+- [ ] *Collider* data structure.
+- [ ] World colliders registration.
+- [ ] Colliision detection.
+- [ ] Collision resolution.
+- [ ] Footballers → World collision.
+- [ ] Ball        → World collision.
+- [ ] Multiple object support.
+- [ ] Reduce the existing game's code logic.

@@ -102,7 +102,7 @@ int main() {
         }
     };
     Player*     players         = call_players(&pitch, 7, 7);
-    Referee     referee         = create_referee(pitch.area.width / 2.0f, pitch.area.height / 2.0f);
+    Referee     referee         = create_referee(pitch.area.width / 2.0f, pitch.bound.height);
     Camera2D    camera          = {
         .offset = {
             WINDOW_WIDTH  / 2.0f,
@@ -114,11 +114,6 @@ int main() {
             pitch.area.height / 2.0f
         },
         .zoom = 1.0f
-    };
-
-    CollisionSystem collisionSystem = {
-        .collider1st = &players->collider,
-        .collider2nd = &pitch.collider,
     };
 
     referee.chase_target   = (Vector2) {
@@ -281,8 +276,6 @@ int main() {
             }
 
             UpdateMusicStream(before_match_music);
-
-            update_collision_system(&collisionSystem);
 
             BeginDrawing();
 

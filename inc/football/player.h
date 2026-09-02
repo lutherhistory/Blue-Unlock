@@ -17,8 +17,6 @@ typedef struct {
 
     Vector2*    indicated_obj;
 
-    Collider collider;
-
     Vector2     position;
     Vector2     velocity;
     Vector2     direction;

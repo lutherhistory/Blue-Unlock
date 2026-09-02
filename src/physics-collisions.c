@@ -1,31 +1,18 @@
 #include "physics/collisions.h"
+
 #include <raylib.h>
 
-void update_collision_system(CollisionSystem* collisions) {
-    Vector2 point1 = {
-        collisions->collider1st->rect.x,
-        collisions->collider1st->rect.y
-    };
 
-    if (!CheckCollisionPointRec(point1, collisions->collider2nd->rect)) {
-        Rectangle overlap = GetCollisionRec(collisions->collider1st->rect, collisions->collider2nd->rect);
+void update_collision(Collider* collider1, Collider* collider2) {
+    if (!collider1 || !collider2) {
 
-        collisions->collider1st->overlap = (Rectangle) {
-            .x = overlap.x,
-            .y = overlap.y + (collisions->collider1st->rect.height - overlap.height),
-            .width  = overlap.width,
-            .height = collisions->collider1st->rect.height - overlap.height
-        };
-    } else {
-        collisions->collider1st->overlap = (Rectangle) {};
+        return;
     }
 
-    Vector2 point2 = {
-        collisions->collider1st->rect.x + collisions->collider1st->rect.width,
-        collisions->collider1st->rect.y + collisions->collider1st->rect.height
-    };
 
-    if (!CheckCollisionPointRec(point2, collisions->collider2nd->rect)) {
 
+    if (CheckCollisionRecs(*collider1->rect, *collider2->rect)) {
+        if (collider1->response);
+        // collider1->response();
     }
 }

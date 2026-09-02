@@ -3,24 +3,27 @@
 
 #include <raylib.h>
 
-typedef struct {
+// Prototype
+typedef struct Collider Collider;
 
-    Rectangle rect;
-    Rectangle overlap;
+// Declaration
+typedef void (*CollisionResponse)();
 
+typedef struct Collider {
+
+    // Collider's Data
+    Rectangle* rect;
+
+    // Collision Resolution
     bool enable;
-    bool inbox;
+
+    // Collision Response
+    CollisionResponse response;
 
 } Collider;
 
-typedef struct {
 
-    Collider* collider1st;
-    Collider* collider2nd;
+void update_collision(Collider* collder1, Collider* collider2);
 
-} CollisionSystem;
-
-
-void update_collision_system(CollisionSystem* collisions);
 
 #endif

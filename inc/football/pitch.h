@@ -6,7 +6,7 @@
 #include <raylib.h>
 
 // --- inc/football/pitch.h ---
-typedef struct {
+typedef struct Pitch {
 
     Rectangle   area;
     Vector2     strip;
