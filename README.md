@@ -2,20 +2,6 @@
 
 > A cozy football game built with Raylib, inspired by the manga/anime "Blue Lock".
 
-## Table of Contents
-
-- [About](#about)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [Project Structure](#project-structure)
-- [Known Issues](#known-issues)
-- [Contributing](#contributing)
-- [License](#license)
-- [Disclaimer / Credits](#disclaimer--credits)
-
 ## About
 
 It is come from the project *Simple Ping Pong* game, and took a week to make it. I also challenge to myself. I WON'T USE ANY OTHERS ASSETS FOR CREATING THIS. But I used audio files :P. Okay. Just let it to be an exception of audio files. 
@@ -31,25 +17,10 @@ It is come from the project *Simple Ping Pong* game, and took a week to make it.
 - **Dynamic HUD:** Custom UI (HUD) designed with a clean, minimalist style.
 - **Audio Integration:** Sound effects loaded for immersion.
 
-### Screenshots
+## Screenshots
 
-![Title Screen](docs/screenshots/screenshots(0).png)
+<img width="1200" height="600" alt="Blue Unlock gameplay" src="docs/game-preview.png" />
 
-![Gameplay](docs/screenshots/screenshots(2).png)
-
-![](docs/screenshots/screenshots(3).png)
-
-![](docs/screenshots/screenshots(4).png)
-
-![](docs/screenshots/screenshots(5).png)
-
-![](docs/screenshots/screenshots(6).png)
-
-![](docs/screenshots/screenshots(7).png)
-
-![](docs/screenshots/screenshots(8).png)
-
-![](docs/screenshots/screenshots(9).png)
 
 ## Requirements
 
@@ -59,15 +30,11 @@ It is come from the project *Simple Ping Pong* game, and took a week to make it.
 
 ## Installation
 
-```bash
-git clone https://github.com/lutherhistory/Blue-Unlock.git
-cd Blue-Unlock
+```Bash
 mkdir build && cd build
-cmake ..
-make
+cmake -S .. -B . -DCMAKE_BUILD_TYPE=Release
+cmake --build .
 ```
-
-## Usage
 
 Run the compiled executable:
 ```Bash
@@ -75,9 +42,14 @@ Run the compiled executable:
 ```
 
 Basic Controls (v0.0.3 Alpha):
-- WASD: the player
-- Left Shift: Sprint (consumes stamina)
-- Space: Kick / Basic Interaction (coming soon)
+- Move with WASD keys
+- For sprint running, use left side shift and WASD key (it will consume your stamina as a payment)
+- `Space` bar for colliding others (it won't not effect on Referee)
+- `F4`  : mute audio
+- `F8`  : rotate your viewing angle
+- `F9`  : toggle your view port scale
+- `F10` : toggle the bottom of stamina bar
+- `F11` : screenshots (I think... it might be broken just for current version🙏)
 
 ## Project Structure
 
@@ -122,12 +94,15 @@ Basic Controls (v0.0.3 Alpha):
     └── main.test.c
 ```
 
-## Known Issues
+## What I want this game to become🚩
 
-- [ ] Suck stamina😅, but balance.
-- [ ] What should I do? Keep using the temporary rectangular textures for players🤔?
-- [ ] The ball is hiding from us😶‍🌫️ JK, it has been not working👻
-- [ ] Yeah, football opponents AI is still dream😴
+- [ ] Footballers' textures to create as the humanoid
+- [ ] Ball to create with textures
+- [ ] Referee's activities as working well
+- [ ] Goal stands to play with 2.5D or 3D perspective
+- [ ] Multiple pitch design
+- [ ] Footballers have different abilities that can be benefit for match
+- [ ] Audiences field, the outside of pitch
 
 ## Contributing
 
