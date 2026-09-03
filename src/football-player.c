@@ -304,7 +304,7 @@ void update_players(Player* players, Camera2D* camera, float dt) {
     camera->target.x = Lerp(camera->target.x, players->position.x, follow_speed * dt);
     camera->target.y = Lerp(camera->target.y, players->position.y, follow_speed * dt);
 
-    // handle_ai_footballers(players);
+    handle_ai_footballers(players);
     handle_player(&players[0], camera->rotation, dt);
 
     for (int i=0; i < players->total; i++) {
