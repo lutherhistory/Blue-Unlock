@@ -1,5 +1,6 @@
 #include "football/pitch.h"
 #include "football/player.h"
+#include "physics/collisions.h"
 
 #include <raylib.h>
 #include <raymath.h>
@@ -43,11 +44,15 @@ Player* call_players(const Pitch* pitch, size_t team1, size_t team2) {
     players->total = team1 + team2;
 
     for (int i=0; i < players->total; i++) {
+        players[i].indicated_obj = NULL;
+
         players[i].sprinting    = false;
+        players[i].kicked        = false;
 
         players[i].velocity     = (Vector2) { 0, 0 };
         players[i].speed        = 70;
         players[i].direction    = (Vector2) { 0, 0 };
+
 
         players[i].max_stamina  = GetRandomValue(100, 600);
         players[i].stamina      = players->max_stamina;
@@ -76,6 +81,11 @@ Player* call_players(const Pitch* pitch, size_t team1, size_t team2) {
             players[i].body.x = field.x + (field.width * 0.5f + strip.x * 1.25f),
             players[i].body.y = field.y + (field.height / 2.0f + (j - (team2 - 1) / 2.0f) * strip.x);
         }
+
+        players[i].position = (Vector2) {
+            players[i].body.x,
+            players[i].body.y
+        };
     }
 
     return players;
@@ -95,7 +105,7 @@ void kill_players(Player* players) {
     }
 }
 
-void draw_players(const Player* players) {
+void draw_players(Player* players) {
     float outLineThick = 5.0f;
 
     for (int i=0; i < players->total; i++) {
@@ -148,7 +158,7 @@ void draw_players(const Player* players) {
             WHITE
         );
 
-        if (i == 0) {
+        if (players[i].indicated_obj && i == 0) {
             Vector2 center = {
                 body.x,
                 body.y
@@ -210,9 +220,22 @@ void handle_player(Player* player, float camera_rotation, float dt) {
     if (IsKeyDown(KEY_W)) movement.y = -1;
     if (IsKeyDown(KEY_S)) movement.y =  1;
 
-    if (!player->kicked && IsKeyDown(KEY_SPACE)) {
-        player->body.x += player->direction.x * 300 * dt;
-        player->body.y += player->direction.y * 300 * dt;
+    if (IsKeyPressed(KEY_O)) {
+        player->indicated_obj = &player[0].position;
+    }
+
+    if (!player->kicked && IsKeyPressed(KEY_SPACE)) {
+        if (player->indicated_obj != &player->position) {
+            float dx = player->indicated_obj->x - player->position.x;
+            float dy = player->indicated_obj->y - player->position.y;
+
+            player->position.x += dx * dt;
+            player->position.y += dy * dt;
+        } else {
+
+            player->position.x += player->direction.x * 300 * dt;
+            player->position.y += player->direction.y * 300 * dt;
+        }
     }
 
     if (movement.x != 0 || movement.y != 0) {
@@ -230,16 +253,64 @@ void handle_player(Player* player, float camera_rotation, float dt) {
     player->velocity.y = movement.y * player->speed;
 }
 
+void handle_ai_footballers(Player* players) {
+    if (!players->indicated_obj)
+        return;
+
+    Vector2 target = *players->indicated_obj;
+
+    for (int i = players->total / 2; i < players->total; i++) {
+        Vector2 offset = Vector2Subtract(
+            target,
+            players[i].position
+        );
+
+        float distance = Vector2Length(offset);
+
+        if (distance < 5.0f) {
+            players[i].velocity = Vector2Zero();
+            players[i].direction = Vector2Zero();
+            players[i].sprinting = false;
+            players[i].speed = 50.0f;
+            continue;
+        }
+
+        Vector2 direction = Vector2Normalize(offset);
+
+        players[i].direction = direction;
+
+        /*
+         * Sprint when far from the target.
+         */
+        if (distance > 100.0f &&
+            players[i].stamina > players[i].max_stamina * 0.1f) {
+
+            players[i].speed = 100.0f;
+            players[i].sprinting = true;
+
+        } else {
+            players[i].speed = 50.0f;
+            players[i].sprinting = false;
+        }
+
+        players[i].velocity =
+            Vector2Scale(direction, players[i].speed);
+    }
+}
+
 void update_players(Player* players, Camera2D* camera, float dt) {
     float follow_speed = 8.0f;
 
-    camera->target.x = Lerp(camera->target.x, players->body.x, follow_speed * dt);
-    camera->target.y = Lerp(camera->target.y, players->body.y, follow_speed * dt);
+    camera->target.x = Lerp(camera->target.x, players->position.x, follow_speed * dt);
+    camera->target.y = Lerp(camera->target.y, players->position.y, follow_speed * dt);
 
-    // handle_ai_player();
+    handle_ai_footballers(players);
     handle_player(&players[0], camera->rotation, dt);
 
     for (int i=0; i < players->total; i++) {
+        players[i].body.x = players[i].position.x;
+        players[i].body.y = players[i].position.y;
+
         // Regenerating Stamina
         float stamina_regen = 5.0f * dt;
 
@@ -255,8 +326,8 @@ void update_players(Player* players, Camera2D* camera, float dt) {
             players[i].max_stamina
         );
 
-        players[i].body.x += players[i].velocity.x * dt;
-        players[i].body.y += players[i].velocity.y * dt;
+        players[i].position.x += players[i].velocity.x * dt;
+        players[i].position.y += players[i].velocity.y * dt;
     }
 
     for (int i=0; i < players->total; i++) {
@@ -266,22 +337,22 @@ void update_players(Player* players, Camera2D* camera, float dt) {
                 if (overlap.width < overlap.height) {
                     float push = overlap.width * 0.5f;
 
-                    if (players[i].body.x > players[j].body.x) {
-                        players[i].body.x += push;
-                        players[j].body.x -= push;
+                    if (players[i].position.x > players[j].position.x) {
+                        players[i].position.x += push;
+                        players[j].position.x -= push;
                     } else {
-                        players[i].body.x -= push;
-                        players[j].body.x += push;
+                        players[i].position.x -= push;
+                        players[j].position.x += push;
                     }
                 } else {
                     float push = overlap.height * 0.5f;
 
-                    if (players[i].body.y > players[j].body.y) {
-                        players[i].body.y += push;
-                        players[j].body.y -= push;
+                    if (players[i].position.y > players[j].position.y) {
+                        players[i].position.y += push;
+                        players[j].position.y -= push;
                     } else {
-                        players[i].body.y -= push;
-                        players[j].body.y += push;
+                        players[i].position.y -= push;
+                        players[j].position.y += push;
                     }
                 }
             }

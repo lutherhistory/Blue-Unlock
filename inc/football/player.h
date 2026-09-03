@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "football/pitch.h"
+#include "physics/collisions.h"
 
 #include <raylib.h>
 #include <stddef.h>
@@ -16,6 +17,7 @@ typedef struct {
 
     Vector2*    indicated_obj;
 
+    Vector2     position;
     Vector2     velocity;
     Vector2     direction;
     float       speed;
@@ -36,7 +38,7 @@ Player* call_players(const Pitch* pitch, size_t team1, size_t team2);
 
 void kill_players(Player* players);
 
-void draw_players(const Player* players);
+void draw_players(Player* players);
 
 void update_players(Player* players, Camera2D* camera, float dt);
 

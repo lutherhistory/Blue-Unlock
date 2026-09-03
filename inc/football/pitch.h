@@ -1,14 +1,18 @@
 #ifndef PITCH_H
 #define PITCH_H
 
+#include "physics/collisions.h"
+
 #include <raylib.h>
 
 // --- inc/football/pitch.h ---
-typedef struct {
+typedef struct Pitch {
 
     Rectangle   area;
     Vector2     strip;
     Rectangle   bound;
+
+    Collider    collider;
 
 } Pitch;
 

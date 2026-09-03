@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(game
-    VERSION 1.0
+    VERSION 0.1.0
     LANGUAGES C
 )
 
@@ -53,6 +53,7 @@ endif()
 add_executable(test
     test/main.test.c
     src/football-pitch.c
+    src/football-player.c
     src/football-referee.c
     src/physics-collisions.c
 )
