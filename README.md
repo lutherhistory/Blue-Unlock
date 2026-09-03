@@ -24,7 +24,32 @@ It is come from the project *Simple Ping Pong* game, and took a week to make it.
 
 ## Features
 
-- 
+- **Primitive-Only Rendering:** All visuals are drawn using Raylib's basic shapes (like `DrawRectangle`, `DrawCircle`) without any external visual assets (except audio).
+- **Custom Pixel Font:** A custom font built entirely using `DrawRectangle()` calls.
+- **Player Movement:** Smooth WASD controls with `Lerp`-based camera follow.
+- **Stamina System:** Sprinting and kicking consume stamina, which regenerates over time.
+- **Dynamic HUD:** Custom UI (HUD) designed with a clean, minimalist style.
+- **Audio Integration:** Sound effects loaded for immersion.
+
+### Screenshots
+
+![Title Screen](docs/screenshots/screenshots(0).png)
+
+![Gameplay](docs/screenshots/screenshots(2).png)
+
+![](docs/screenshots/screenshots(3).png)
+
+![](docs/screenshots/screenshots(4).png)
+
+![](docs/screenshots/screenshots(5).png)
+
+![](docs/screenshots/screenshots(6).png)
+
+![](docs/screenshots/screenshots(7).png)
+
+![](docs/screenshots/screenshots(8).png)
+
+![](docs/screenshots/screenshots(9).png)
 
 ## Requirements
 
@@ -52,7 +77,7 @@ Run the compiled executable:
 Basic Controls (v0.0.3 Alpha):
 - WASD: the player
 - Left Shift: Sprint (consumes stamina)
-- Space: Kick / Basic Interaction (comming soon)
+- Space: Kick / Basic Interaction (coming soon)
 
 ## Project Structure
 
